@@ -27,7 +27,7 @@ func Create(c echo.Context) error {
 		c.Logger().Error("Email is not valid")
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Email is not valid"})
 	}
-	hashedPassword := core.Hash(password)
+	hashedPassword := cores.Hash(password)
 	user := &models.User{
 		Username: username,
 		Password: hashedPassword,
@@ -41,7 +41,7 @@ func Create(c echo.Context) error {
 	} else {
 		db.DB.Create(user)
 		c.Logger().Info("User created successfully")
-		core.SetAndGenerateToken(username, c)
+		cores.SetAndGenerateToken(username, c)
 		return c.JSON(http.StatusOK, map[string]string{"message": "User created successfully"})
 	}
 }
@@ -68,9 +68,9 @@ func Login(c echo.Context) error {
 
 	exist := isCheckExists(user)
 	if exist {
-		core.GetWhereUser(user.Username, user)
-		if core.Compare(user.Password, password) {
-			token, err := core.GenerateToken(user.Username)
+		cores.GetWhereUser(user.Username, user)
+		if cores.Compare(user.Password, password) {
+			token, err := cores.GenerateToken(user.Username)
 			if err != nil {
 				return nil
 			}
@@ -107,7 +107,7 @@ func GetPosts(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, map[string]string{"error": "User not found"})
 	} else {
 
-		core.GetWhereUser(username, user)
+		cores.GetWhereUser(username, user)
 		if user.Posts == nil {
 			return c.JSON(http.StatusOK, map[string]string{"user": user.Username, "posts": "No posts"})
 		}
@@ -127,12 +127,12 @@ func ChangeUsername(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Unauthorized"})
 	}
 	token = token[7:]
-	claims, err := core.ValidateToken(token)
+	claims, err := cores.ValidateToken(token)
 
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Unauthorized"})
 	}
-	username := core.GetUsername(claims)
+	username := cores.GetUsername(claims)
 
 	user := &models.User{
 		Username: newUsername,
@@ -145,7 +145,7 @@ func ChangeUsername(c echo.Context) error {
 
 	if !exists {
 		db.DB.Model(models.User{}).Where("username = ?", username["username"]).Update("username", newUsername)
-		core.SetAndGenerateToken(newUsername, c)
+		cores.SetAndGenerateToken(newUsername, c)
 		return c.JSON(http.StatusOK, map[string]string{"message": "Username changed successfully"})
 	}
 	return c.JSON(http.StatusConflict, map[string]string{"error": "Username already exists"})
@@ -155,11 +155,11 @@ func DeleteMyAccount(c echo.Context) error {
 
 	token := c.Request().Header.Get("Authorization")
 	token = token[7:]
-	claims, err := core.ValidateToken(token)
+	claims, err := cores.ValidateToken(token)
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Unauthorized"})
 	}
-	username := core.GetUsername(claims)
+	username := cores.GetUsername(claims)
 	user := &models.User{}
 	posts := &[]models.Post{}
 	comments := &[]models.Comment{}

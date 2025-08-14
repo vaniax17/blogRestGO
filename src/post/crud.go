@@ -14,11 +14,11 @@ import (
 func Create(c echo.Context) error {
 	token := c.Request().Header.Get("Authorization")
 	token = token[7:]
-	claims, err := core.ValidateToken(token)
+	claims, err := cores.ValidateToken(token)
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Unauthorized"})
 	}
-	username := core.GetUsername(claims)
+	username := cores.GetUsername(claims)
 
 	title := c.QueryParam("title")
 	content := c.QueryParam("content")
@@ -48,10 +48,10 @@ func checkExists(slug string) bool {
 func GetBySlug(c echo.Context) error {
 	slug := c.Param("slug")
 	if !checkExists(slug) {
-		return c.JSON(http.StatusNotFound, map[string]string{"error": "Post not found"})
+		return c.JSON(http.StatusNotFound, map[string]string{"error": cores.PostNotFound})
 	}
 	post := &models.Post{}
-	core.GetWherePost(slug, post)
+	cores.GetWherePost(slug, post)
 	return c.JSON(http.StatusOK, map[string]any{"post": post})
 }
 
@@ -64,18 +64,18 @@ func GetAll(c echo.Context) error {
 func Delete(c echo.Context) error {
 	token := c.Request().Header.Get("Authorization")
 	token = token[7:]
-	claims, err := core.ValidateToken(token)
+	claims, err := cores.ValidateToken(token)
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Unauthorized"})
 	}
-	username := core.GetUsername(claims)
+	username := cores.GetUsername(claims)
 
 	slug := c.Param("slug")
 	if !checkExists(slug) {
 		return c.JSON(http.StatusNotFound, map[string]string{"error": "Post not found"})
 	}
 	post := &models.Post{}
-	core.GetWherePost(slug, post)
+	cores.GetWherePost(slug, post)
 	if post.AuthorUsername != username["username"] {
 		return c.JSON(http.StatusForbidden, map[string]string{"error": "Permission denied"})
 	}
@@ -87,7 +87,7 @@ func Delete(c echo.Context) error {
 func GetAuthor(c echo.Context) error {
 	slug := c.Param("slug")
 	if !checkExists(slug) {
-		return c.JSON(http.StatusNotFound, map[string]string{"error": "Post not found"})
+		return c.JSON(http.StatusNotFound, map[string]string{"error": cores.PostNotFound})
 	}
 	post := &models.Post{}
 	db.DB.Where("slug = ?", slug).Find(post)

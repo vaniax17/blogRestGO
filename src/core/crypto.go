@@ -1,4 +1,4 @@
-package core
+package cores
 
 import "golang.org/x/crypto/bcrypt"
 
