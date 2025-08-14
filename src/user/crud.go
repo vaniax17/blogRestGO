@@ -15,7 +15,7 @@ import (
 func Create(c echo.Context) error {
 
 	username := c.QueryParam("username")
-	valid := validators.IsMInOrMaxLengthOfUsername(username)
+	valid := validators.IsMinOrMaxLengthOfUsername(username)
 	if !valid {
 		c.Logger().Error("Username is not valid")
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Username is not valid min length 3 or max length is 30"})
@@ -138,7 +138,7 @@ func ChangeUsername(c echo.Context) error {
 		Username: newUsername,
 	}
 	exists := isCheckExists(user)
-	valid := validators.IsMInOrMaxLengthOfUsername(newUsername)
+	valid := validators.IsMinOrMaxLengthOfUsername(newUsername)
 	if !valid {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Username is not valid min length 3 or max length is 30"})
 	}
@@ -149,4 +149,25 @@ func ChangeUsername(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]string{"message": "Username changed successfully"})
 	}
 	return c.JSON(http.StatusConflict, map[string]string{"error": "Username already exists"})
+}
+
+func DeleteMyAccount(c echo.Context) error {
+
+	token := c.Request().Header.Get("Authorization")
+	token = token[7:]
+	claims, err := core.ValidateToken(token)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Unauthorized"})
+	}
+	username := core.GetUsername(claims)
+	user := &models.User{}
+	posts := &[]models.Post{}
+	comments := &[]models.Comment{}
+	db.DB.Where("username = ?", username["username"]).Delete(user).Joins(
+		"author_username = ?", username["username"]).Delete(posts).Joins(
+		"author_username = ?", username["username"]).Delete(comments)
+	c.Logger().Info("User deleted successfully")
+	c.Response().Header().Set("Authorization", "Bearer ")
+	return c.JSON(http.StatusOK, map[string]string{"message": "User deleted successfully"})
+
 }

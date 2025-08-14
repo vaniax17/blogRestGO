@@ -12,5 +12,6 @@ func RoutesInit(e *echo.Echo) {
 	e.GET("/user/all/usernames", user.GetAll)
 	e.GET("/user/get/posts", user.GetPosts)
 	e.PUT("/user/change/username", user.ChangeUsername)
+	e.DELETE("/user/delete_my_account", user.DeleteMyAccount)
 
 }
