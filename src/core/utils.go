@@ -4,6 +4,7 @@ import (
 	"blogRest/src/db"
 	"blogRest/src/models"
 
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
@@ -25,4 +26,12 @@ func GetWhereUser(username string, user *models.User) {
 
 func GetWherePost(slug string, post *models.Post) {
 	db.DB.Where("slug = ?", slug).First(post)
+}
+
+func Slug() string {
+	newUUID, err := uuid.NewUUID()
+	if err != nil {
+		return ""
+	}
+	return newUUID.String()
 }

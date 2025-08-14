@@ -23,7 +23,7 @@ func Create(c echo.Context) error {
 	title := c.QueryParam("title")
 	content := c.QueryParam("content")
 
-	slug := Slug()
+	slug := cores.Slug()
 
 	post := &models.Post{
 		Title:          title,
@@ -36,7 +36,7 @@ func Create(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]string{"message": "Post created successfully", "slug": slug})
 }
 
-func checkExists(slug string) bool {
+func IsCheckExists(slug string) bool {
 	post := &models.Post{}
 	err := db.DB.Where("slug = ?", slug).First(post).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -47,7 +47,7 @@ func checkExists(slug string) bool {
 
 func GetBySlug(c echo.Context) error {
 	slug := c.Param("slug")
-	if !checkExists(slug) {
+	if !IsCheckExists(slug) {
 		return c.JSON(http.StatusNotFound, map[string]string{"error": cores.PostNotFound})
 	}
 	post := &models.Post{}
@@ -71,7 +71,7 @@ func Delete(c echo.Context) error {
 	username := cores.GetUsername(claims)
 
 	slug := c.Param("slug")
-	if !checkExists(slug) {
+	if !IsCheckExists(slug) {
 		return c.JSON(http.StatusNotFound, map[string]string{"error": "Post not found"})
 	}
 	post := &models.Post{}
@@ -86,7 +86,7 @@ func Delete(c echo.Context) error {
 
 func GetAuthor(c echo.Context) error {
 	slug := c.Param("slug")
-	if !checkExists(slug) {
+	if !IsCheckExists(slug) {
 		return c.JSON(http.StatusNotFound, map[string]string{"error": cores.PostNotFound})
 	}
 	post := &models.Post{}

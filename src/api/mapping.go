@@ -1,6 +1,7 @@
 package api
 
 import (
+	"blogRest/src/comment"
 	"blogRest/src/post"
 	"blogRest/src/user"
 
@@ -19,5 +20,7 @@ func RoutesInit(e *echo.Echo) {
 	e.GET("/posts", post.GetAll)
 	e.DELETE("/posts/:slug", post.Delete)
 	e.GET("/posts/:slug/author", post.GetAuthor)
+	e.POST("/posts/:slug/comments", comment.Create)
+	e.GET("/posts/:slug/comments", comment.Get)
 
 }
