@@ -54,3 +54,9 @@ func GetBySlug(c echo.Context) error {
 	db.DB.Where("slug = ?", slug).First(post)
 	return c.JSON(http.StatusOK, map[string]any{"post": post})
 }
+
+func GetAll(c echo.Context) error {
+	posts := &[]models.Post{}
+	db.DB.Find(posts)
+	return c.JSON(http.StatusOK, map[string]any{"posts": posts})
+}

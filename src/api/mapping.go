@@ -16,5 +16,6 @@ func RoutesInit(e *echo.Echo) {
 	e.DELETE("/user/delete_my_account", user.DeleteMyAccount)
 	e.POST("/posts", post.Create)
 	e.GET("/posts/:slug", post.GetBySlug)
+	e.GET("/posts", post.GetAll)
 
 }
