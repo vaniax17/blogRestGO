@@ -1,6 +1,7 @@
 package db
 
 import (
+	"blogRest/src/models"
 	"fmt"
 	"os"
 
@@ -34,7 +35,7 @@ func Init() {
 	}
 	fmt.Println("Connected to database successfully")
 
-	err = DB.AutoMigrate()
+	err = DB.AutoMigrate(&models.User{}, &models.Post{}, &models.Comment{})
 
 	if err != nil {
 		panic("failed to migrate database")
