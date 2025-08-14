@@ -15,7 +15,7 @@ import (
 func Create(c echo.Context) error {
 
 	username := c.QueryParam("username")
-	valid := validators.IsUsername(username)
+	valid := validators.IsMInOrMaxLengthOfUsername(username)
 	if !valid {
 		c.Logger().Error("Username is not valid")
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Username is not valid min length 3 or max length is 30"})
@@ -138,7 +138,7 @@ func ChangeUsername(c echo.Context) error {
 		Username: newUsername,
 	}
 	exists := isCheckExists(user)
-	valid := validators.IsUsername(newUsername)
+	valid := validators.IsMInOrMaxLengthOfUsername(newUsername)
 	if !valid {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Username is not valid min length 3 or max length is 30"})
 	}
