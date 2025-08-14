@@ -9,5 +9,6 @@ import (
 func RoutesInit(e *echo.Echo) {
 	e.GET("/user/login", user.Login)
 	e.POST("/user/register", user.Create)
+	e.GET("/user/all/usernames", user.GetAll)
 
 }
