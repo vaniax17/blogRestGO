@@ -22,5 +22,6 @@ func RoutesInit(e *echo.Echo) {
 	e.GET("/posts/:slug/author", post.GetAuthor)
 	e.POST("/posts/:slug/comments", comment.Create)
 	e.GET("/posts/:slug/comments", comment.Get)
+	e.GET("/comments/:slug", comment.GetConcrete)
 
 }
