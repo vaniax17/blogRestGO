@@ -11,5 +11,6 @@ func RoutesInit(e *echo.Echo) {
 	e.POST("/user/register", user.Create)
 	e.GET("/user/all/usernames", user.GetAll)
 	e.GET("/user/get/posts", user.GetPosts)
+	e.PUT("/user/change/username", user.ChangeUsername)
 
 }

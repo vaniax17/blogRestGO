@@ -15,9 +15,14 @@ import (
 func Create(c echo.Context) error {
 
 	username := c.QueryParam("username")
+	valid := validators.IsUsername(username)
+	if !valid {
+		c.Logger().Error("Username is not valid")
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Username is not valid min length 3 or max length is 30"})
+	}
 	password := c.QueryParam("password")
 	email := c.QueryParam("email")
-	valid := validators.IsEmail(email)
+	valid = validators.IsEmail(email)
 	if !valid {
 		c.Logger().Error("Email is not valid")
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Email is not valid"})
@@ -36,11 +41,7 @@ func Create(c echo.Context) error {
 	} else {
 		db.DB.Create(user)
 		c.Logger().Info("User created successfully")
-		token, err := core.GenerateToken(user.Username)
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, map[string]string{"error": "jwt"})
-		}
-		c.Response().Header().Set("Authorization", "Bearer "+token)
+		core.SetAndGenerateToken(username, c)
 		return c.JSON(http.StatusOK, map[string]string{"message": "User created successfully"})
 	}
 }
@@ -67,7 +68,7 @@ func Login(c echo.Context) error {
 
 	exist := isCheckExists(user)
 	if exist {
-		db.DB.Where("username = ?", user.Username).First(user)
+		core.GetWHereUser(user.Username, user)
 		if core.Compare(user.Password, password) {
 			token, err := core.GenerateToken(user.Username)
 			if err != nil {
@@ -106,8 +107,7 @@ func GetPosts(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, map[string]string{"error": "User not found"})
 	} else {
 
-		db.DB.Where("username = ?", username).First(user)
-
+		core.GetWHereUser(username, user)
 		if user.Posts == nil {
 			return c.JSON(http.StatusOK, map[string]string{"user": user.Username, "posts": "No posts"})
 		}
@@ -116,4 +116,37 @@ func GetPosts(c echo.Context) error {
 
 	}
 
+}
+
+func ChangeUsername(c echo.Context) error {
+
+	newUsername := c.QueryParam("new_username")
+
+	token := c.Request().Header.Get("Authorization")
+	if len(token) == 0 {
+		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Unauthorized"})
+	}
+	token = token[7:]
+	claims, err := core.ValidateToken(token)
+
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Unauthorized"})
+	}
+	username := core.GetUsername(claims)
+
+	user := &models.User{
+		Username: newUsername,
+	}
+	exists := isCheckExists(user)
+	valid := validators.IsUsername(newUsername)
+	if !valid {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Username is not valid min length 3 or max length is 30"})
+	}
+
+	if !exists {
+		db.DB.Model(models.User{}).Where("username = ?", username["username"]).Update("username", newUsername)
+		core.SetAndGenerateToken(newUsername, c)
+		return c.JSON(http.StatusOK, map[string]string{"message": "Username changed successfully"})
+	}
+	return c.JSON(http.StatusConflict, map[string]string{"error": "Username already exists"})
 }
