@@ -1,4 +1,4 @@
-package blogRest
+package main
 
 import (
 	"blogRest/src/db"
@@ -12,6 +12,8 @@ func main() {
 	e := echo.New()
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+
+	db.Init()
 
 	if err := e.Start(":8080"); err != nil {
 		e.Logger.Fatal(err)
