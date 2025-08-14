@@ -35,3 +35,7 @@ func Slug() string {
 	}
 	return newUUID.String()
 }
+
+func GetWhereComment(slug string, comment *models.Comment) {
+	db.DB.Where("slug = ?", slug).First(comment)
+}

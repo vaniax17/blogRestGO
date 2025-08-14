@@ -65,6 +65,39 @@ func GetConcrete(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, map[string]string{"error": cores.CommentNotFound})
 	}
 	comment := &models.Comment{}
-	db.DB.Where("slug = ?", slug).First(comment)
+	cores.GetWhereComment(slug, comment)
 	return c.JSON(http.StatusOK, map[string]any{"comment": comment})
+}
+
+func ChangeContent(c echo.Context) error {
+	token := c.Request().Header.Get("Authorization")
+	token = token[7:]
+	claims, err := cores.ValidateToken(token)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Unauthorized"})
+	}
+	username := cores.GetUsername(claims)
+	slug := c.Param("slug")
+	exists := isExistsComment(slug)
+	if !exists {
+		return c.JSON(http.StatusNotFound, map[string]string{"error": cores.CommentNotFound})
+	}
+
+	comment := &models.Comment{}
+
+	cores.GetWhereComment(slug, comment)
+	if comment.AuthorUsername != username["username"] {
+		return c.JSON(http.StatusForbidden, map[string]string{"error": cores.PermissionDenied})
+	}
+	content := c.QueryParam("content")
+	if len(content) == 0 {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": cores.MinimumOneWord})
+	}
+	if content == comment.Content {
+		return c.JSON(http.StatusOK, map[string]string{"message": "Comment unchanged"})
+	}
+	comment.Content = content
+	db.DB.Save(comment)
+	return c.JSON(http.StatusOK, map[string]string{"message": "Comment changed successfully"})
+
 }
