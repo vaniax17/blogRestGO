@@ -68,7 +68,7 @@ func Login(c echo.Context) error {
 
 	exist := isCheckExists(user)
 	if exist {
-		core.GetWHereUser(user.Username, user)
+		core.GetWhereUser(user.Username, user)
 		if core.Compare(user.Password, password) {
 			token, err := core.GenerateToken(user.Username)
 			if err != nil {
@@ -107,7 +107,7 @@ func GetPosts(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, map[string]string{"error": "User not found"})
 	} else {
 
-		core.GetWHereUser(username, user)
+		core.GetWhereUser(username, user)
 		if user.Posts == nil {
 			return c.JSON(http.StatusOK, map[string]string{"user": user.Username, "posts": "No posts"})
 		}

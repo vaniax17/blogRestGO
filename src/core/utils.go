@@ -19,6 +19,10 @@ func SetAndGenerateToken(username string, c echo.Context) {
 
 }
 
-func GetWHereUser(username string, user *models.User) {
+func GetWhereUser(username string, user *models.User) {
 	db.DB.Preload("Posts").Where("username = ?", username).First(user)
+}
+
+func GetWherePost(slug string, post *models.Post) {
+	db.DB.Where("slug = ?", slug).First(post)
 }

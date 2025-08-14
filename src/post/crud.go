@@ -51,7 +51,7 @@ func GetBySlug(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, map[string]string{"error": "Post not found"})
 	}
 	post := &models.Post{}
-	db.DB.Where("slug = ?", slug).First(post)
+	core.GetWherePost(slug, post)
 	return c.JSON(http.StatusOK, map[string]any{"post": post})
 }
 
@@ -59,4 +59,27 @@ func GetAll(c echo.Context) error {
 	posts := &[]models.Post{}
 	db.DB.Find(posts)
 	return c.JSON(http.StatusOK, map[string]any{"posts": posts})
+}
+
+func Delete(c echo.Context) error {
+	token := c.Request().Header.Get("Authorization")
+	token = token[7:]
+	claims, err := core.ValidateToken(token)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Unauthorized"})
+	}
+	username := core.GetUsername(claims)
+
+	slug := c.Param("slug")
+	if !checkExists(slug) {
+		return c.JSON(http.StatusNotFound, map[string]string{"error": "Post not found"})
+	}
+	post := &models.Post{}
+	core.GetWherePost(slug, post)
+	if post.AuthorUsername != username["username"] {
+		return c.JSON(http.StatusForbidden, map[string]string{"error": "Permission denied"})
+	}
+	db.DB.Delete(post)
+	return c.JSON(http.StatusOK, map[string]string{"message": "Post deleted successfully"})
+
 }
