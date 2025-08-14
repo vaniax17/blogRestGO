@@ -1,0 +1,82 @@
+package user
+
+import (
+	"blogRest/src/core"
+	"blogRest/src/db"
+	"blogRest/src/models"
+	"blogRest/src/validators"
+	"errors"
+	"net/http"
+
+	"github.com/labstack/echo/v4"
+	"gorm.io/gorm"
+)
+
+func Create(c echo.Context) error {
+
+	username := c.QueryParam("username")
+	password := c.QueryParam("password")
+	email := c.QueryParam("email")
+	valid := validators.IsEmail(email)
+	if !valid {
+		c.Logger().Error("Email is not valid")
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Email is not valid"})
+	}
+	hashedPassword := core.Hash(password)
+	user := &models.User{
+		Username: username,
+		Password: hashedPassword,
+		Email:    email,
+	}
+
+	if isCheckExists(user) {
+		c.Logger().Error("User already exists")
+		return c.JSON(http.StatusConflict, map[string]string{"error": "User already exists"})
+
+	} else {
+		db.DB.Create(user)
+		c.Logger().Info("User created successfully")
+		token, err := core.GenerateToken(user.Username)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": "jwt"})
+		}
+		c.Response().Header().Set("Authorization", "Bearer "+token)
+		return c.JSON(http.StatusOK, map[string]string{"message": "User created successfully"})
+	}
+}
+
+func isCheckExists(user *models.User) bool {
+
+	err := db.DB.Where("username = ? OR email = ?", user.Username, user.Email).First(user).Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return false
+	}
+	return true
+
+}
+
+func Login(c echo.Context) error {
+
+	username := c.QueryParam("username")
+	password := c.QueryParam("password")
+	user := &models.User{
+		Username: username,
+		Password: password,
+	}
+
+	exist := isCheckExists(user)
+	if exist {
+		db.DB.Where("username = ?", user.Username).First(user)
+		if core.Compare(user.Password, password) {
+			token, err := core.GenerateToken(user.Username)
+			if err != nil {
+				return nil
+			}
+			c.Response().Header().Set("Authorization", "Bearer "+token)
+			return c.JSON(http.StatusOK, map[string]string{"message": "Login successfully"})
+		}
+		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Unauthorized"})
+	}
+	return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Unauthorized"})
+}
