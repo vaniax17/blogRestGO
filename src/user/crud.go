@@ -93,3 +93,27 @@ func GetAll(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]any{"users": usernames})
 
 }
+
+func GetPosts(c echo.Context) error {
+
+	username := c.QueryParam("username")
+	user := &models.User{
+		Username: username,
+	}
+
+	exists := isCheckExists(user)
+	if !exists {
+		return c.JSON(http.StatusNotFound, map[string]string{"error": "User not found"})
+	} else {
+
+		db.DB.Where("username = ?", username).First(user)
+
+		if user.Posts == nil {
+			return c.JSON(http.StatusOK, map[string]string{"user": user.Username, "posts": "No posts"})
+		}
+
+		return c.JSON(http.StatusOK, map[string]any{"user": user.Username, "posts": user.Posts})
+
+	}
+
+}
