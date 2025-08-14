@@ -18,5 +18,6 @@ func RoutesInit(e *echo.Echo) {
 	e.GET("/posts/:slug", post.GetBySlug)
 	e.GET("/posts", post.GetAll)
 	e.DELETE("/posts/:slug", post.Delete)
+	e.GET("/posts/:slug/author", post.GetAuthor)
 
 }

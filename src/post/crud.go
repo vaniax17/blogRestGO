@@ -83,3 +83,13 @@ func Delete(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]string{"message": "Post deleted successfully"})
 
 }
+
+func GetAuthor(c echo.Context) error {
+	slug := c.Param("slug")
+	if !checkExists(slug) {
+		return c.JSON(http.StatusNotFound, map[string]string{"error": "Post not found"})
+	}
+	post := &models.Post{}
+	db.DB.Where("slug = ?", slug).Find(post)
+	return c.JSON(http.StatusOK, map[string]any{"Slug": slug, "Author": post.AuthorUsername})
+}
