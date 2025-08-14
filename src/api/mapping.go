@@ -1,6 +1,7 @@
 package api
 
 import (
+	"blogRest/src/post"
 	"blogRest/src/user"
 
 	"github.com/labstack/echo/v4"
@@ -13,5 +14,6 @@ func RoutesInit(e *echo.Echo) {
 	e.GET("/user/get/posts", user.GetPosts)
 	e.PUT("/user/change/username", user.ChangeUsername)
 	e.DELETE("/user/delete_my_account", user.DeleteMyAccount)
+	e.POST("/posts", post.Create)
 
 }

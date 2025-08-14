@@ -20,5 +20,5 @@ func SetAndGenerateToken(username string, c echo.Context) {
 }
 
 func GetWHereUser(username string, user *models.User) {
-	db.DB.Where("username = ?", username).First(user)
+	db.DB.Preload("Posts").Where("username = ?", username).First(user)
 }
