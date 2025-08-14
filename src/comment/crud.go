@@ -123,3 +123,13 @@ func Delete(c echo.Context) error {
 	db.DB.Delete(comment)
 	return c.JSON(http.StatusOK, map[string]string{"message": "Comment deleted successfully"})
 }
+
+func Author(c echo.Context) error {
+	slug := c.Param("slug")
+	if !isExistsComment(slug) {
+		return c.JSON(http.StatusNotFound, map[string]string{"error": cores.CommentNotFound})
+	}
+	comment := &models.Comment{}
+	db.DB.Where("slug = ?", slug).Find(comment)
+	return c.JSON(http.StatusOK, map[string]any{"slug": comment.Slug, "Author": comment.AuthorUsername})
+}

@@ -25,5 +25,6 @@ func RoutesInit(e *echo.Echo) {
 	e.GET("/comments/:slug", comment.GetConcrete)
 	e.PUT("/comments/:slug", comment.ChangeContent)
 	e.DELETE("/comments/:slug", comment.Delete)
+	e.GET("/comments/:slug/author", comment.Author)
 
 }
