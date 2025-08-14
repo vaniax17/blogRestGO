@@ -80,3 +80,16 @@ func Login(c echo.Context) error {
 	}
 	return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Unauthorized"})
 }
+
+func GetAll(c echo.Context) error {
+
+	var usernames []string
+	result := db.DB.Model(&models.User{}).Select("username").Find(&usernames)
+	if result.Error != nil {
+		err := result.Error
+		return c.JSON(http.StatusInternalServerError, map[string]any{"error": err})
+	}
+
+	return c.JSON(http.StatusOK, map[string]any{"users": usernames})
+
+}
