@@ -4,9 +4,11 @@ import (
 	"blogRest/src/core"
 	"blogRest/src/db"
 	"blogRest/src/models"
+	"errors"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"gorm.io/gorm"
 )
 
 func Create(c echo.Context) error {
@@ -32,4 +34,23 @@ func Create(c echo.Context) error {
 
 	db.DB.Create(post)
 	return c.JSON(http.StatusOK, map[string]string{"message": "Post created successfully", "slug": slug})
+}
+
+func checkExists(slug string) bool {
+	post := &models.Post{}
+	err := db.DB.Where("slug = ?", slug).First(post).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return false
+	}
+	return true
+}
+
+func GetBySlug(c echo.Context) error {
+	slug := c.Param("slug")
+	if !checkExists(slug) {
+		return c.JSON(http.StatusNotFound, map[string]string{"error": "Post not found"})
+	}
+	post := &models.Post{}
+	db.DB.Where("slug = ?", slug).First(post)
+	return c.JSON(http.StatusOK, map[string]any{"post": post})
 }
