@@ -1,16 +1,9 @@
 package validators
 
 import (
-	"regexp"
-	"strings"
+	"github.com/asaskevich/govalidator"
 )
 
-var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`)
-
 func IsEmail(s string) bool {
-	s = strings.TrimSpace(s)
-	if s == "" {
-		return false
-	}
-	return emailRegex.MatchString(s)
+	return govalidator.IsEmail(s)
 }
